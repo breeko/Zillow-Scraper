@@ -3,12 +3,12 @@ import re
 import os
 from time import sleep
 from random import random
-from browser import setup_browser
+from utils.browser import setup_browser
 from selenium.common.exceptions import StaleElementReferenceException
 import argparse
-from csv_utils import delete_dups
+from utils.csv_utils import delete_dups
 
-from utils import get_zip_from_zillow_url
+from utils.utils import get_zip_from_zillow_url
 
 parser = argparse.ArgumentParser()
 parser.add_argument("zipcodes", help="file containing zipcodes to scrape")
@@ -16,21 +16,19 @@ parser.add_argument("-r", "--rentals", dest='rentals', action='store_false',
                      help="boolen to indicate whether to scrape rentals")
 parser.add_argument("-l", "--headless", dest='headless', action='store_true',
                      help="boolen to indicate whether to run as headless")
+parser.add_argument("-o", "--out", dest='out', default="urls.txt",
+                     help="output file to save the urls")
 
 parser.set_defaults(rentals=False)
 
 args = parser.parse_args()
 
-def scrape(driver, zipcodes, filename=None, rentals=False):
+def scrape(driver, zipcodes, filename, rentals=False):
     if rentals:
         base_url = "https://www.zillow.com/homes/for_rent/"
-        if filename is None:
-            filename = "rentals.txt"
     else:
         base_url = "https://www.zillow.com/homes/for_sale/"
         # next: /homes/New-Jersey_rb/2_p/
-        if filename is None:
-            filename = "sales.txt"
     
     f = open(filename, 'a')
     
@@ -103,7 +101,7 @@ if __name__ == "__main__":
     
     print("Scraping {}".format(args.zipcodes))
     try:
-        filename = scrape(driver, args.zipcodes, rentals=args.rentals)
+        filename = scrape(driver=driver, zipcodes=args.zipcodes, filename=args.out, rentals=args.rentals)
     except Exception as e:
         print(e)
     driver.close()

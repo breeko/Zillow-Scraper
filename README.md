@@ -1,12 +1,9 @@
 # Zillow-Scraper
 
-zipcodes.txt - list of NJ zipcodes
+Scrapes all sales or rental listings given a list of zipcodes
 
-get_houses.py - scrapes all the homes listed for rent or sale based on file containing zipcodes
+`python get_urls.py data/zipcodes/nyc-zipcodes.txt --headless --out zipcodes.txt`
 
-scraper_selenium.py - scrapes all the home information based on file containing zillow home urls. Exports data to csv file
+Scrapes Zillow data given a list of urls
 
-config.py - must contain login credentials to Zillow
-e.g.
-	email = "my.email@gmail.com"
-	password = "MyPassword1"
+`python scrape.py data/urls/sales.txt --headless`
