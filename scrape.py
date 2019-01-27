@@ -17,7 +17,7 @@ import configs
 import argparse
 import logging
 
-logging.basicConfig(filename='scrape.log',level=logging.INFO)
+logging.basicConfig(filename='scrape.log', format='%(asctime)s -  %(levelname)s - %(message)s', level=logging.INFO)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("urls", help="file containing zillow sites to scrape")
