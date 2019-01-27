@@ -75,16 +75,13 @@ if __name__ == "__main__":
     print("Setting up browser")
     browser = setup_browser(sign_in=False, headless=args.headless)
     print("Scraping {}".format(args.urls))
-    # try:
-    scrape_urls(
-        browser=browser,
-        urls_path=args.urls,
-        out_path=args.out,
-        tax_history_path=args.taxes,
-        price_history_path=args.prices)
-    # except Exception as e:
-    #     print(e)
+    try:
+        scrape_urls(
+            browser=browser,
+            urls_path=args.urls,
+            out_path=args.out,
+            tax_history_path=args.taxes,
+            price_history_path=args.prices)
+    except Exception as e:
+        print(e)
     browser.close()
-    # delete_dups(filename, "{}_no_dups.".format(filename))
-
-# delete_dups("data/out.csv", "data/out.csv")
