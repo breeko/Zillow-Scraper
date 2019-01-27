@@ -6,6 +6,7 @@ from random import random
 from browser import setup_browser
 from selenium.common.exceptions import StaleElementReferenceException
 import argparse
+from csv_utils import delete_dups
 
 from utils import get_zip_from_zillow_url
 
@@ -13,9 +14,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("zipcodes", help="file containing zipcodes to scrape")
 parser.add_argument("-r", "--rentals", dest='rentals', action='store_false',
                      help="boolen to indicate whether to scrape rentals")
-parser.add_argument("-l", "--headless", dest='headless', action='store_false',
+parser.add_argument("-l", "--headless", dest='headless', action='store_true',
                      help="boolen to indicate whether to run as headless")
-# TODO: parse zipcodes in sales.txt and start from the latest one
 
 parser.set_defaults(rentals=False)
 
@@ -34,9 +34,8 @@ def scrape(driver, zipcodes, filename=None, rentals=False):
     
     f = open(filename, 'a')
     
-    added_so_far = set(open(filename).read().split())
-    zipcodes_added = [get_zip_from_zillow_url(url) for url in added_so_far]
-    zipcodes_added = set(zipcodes_added[:-1]) # remove last zip-code as it is likely unfinished
+    urls_added = set(open(filename).read().split())
+    zipcodes_added = set([get_zip_from_zillow_url(url) for url in urls_added])
     
     zipcodes = open(zipcodes).read().split()
 
@@ -79,16 +78,18 @@ def scrape(driver, zipcodes, filename=None, rentals=False):
                     "stale element..."
                     sleep(1)
             
-            if len(home_links) == 0 or num_results == 0:
+            if len(home_links) == 0 or num_results == 0 or home_links.issubset(urls_added):
                 break
             
             f.write('\n'.join(home_links))
+            f.write('\n')
+            
             print(current_url + "\tItems added: " + str(len(home_links)))
             
             current_page += 1
             current_url = url + str(current_page) + "_p/"
 
-            added_so_far = added_so_far.union(home_links)
+            urls_added = urls_added.union(home_links)
             sleep(random() * 5)
 
         zipcodes_added.add(zipcode)
@@ -96,19 +97,10 @@ def scrape(driver, zipcodes, filename=None, rentals=False):
     f.close()
     return filename
 
-def delete_dups(in_file_name, out_file_name):
-    seen = set()
-    out_file = open(out_file_name, 'w')
-    for line in open(in_file_name, 'r'):
-        if line not in seen:
-            out_file.write(line)
-            seen.add(line)
-    out_file.close()
-
 if __name__ == "__main__":
     print("Setting up browser")
     driver = setup_browser(sign_in=False, headless=args.headless)
-
+    
     print("Scraping {}".format(args.zipcodes))
     try:
         filename = scrape(driver, args.zipcodes, rentals=args.rentals)
