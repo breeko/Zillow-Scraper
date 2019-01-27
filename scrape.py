@@ -54,17 +54,19 @@ def scrape_urls(browser, urls_path, out_path, price_history_path, tax_history_pa
         in_price = zpid in price_reviewed
         in_tax = zpid in tax_reviewed
 
-        if in_attrs and in_price and in_tax:
+        if in_attrs:
+            # NOTE: ignore if review in attributes although may be missing price and tax history
             continue
 
         browser.get(url)
 
-        attrs = price_history = tax_hostory = None
+        attrs = price_history = tax_history = None
         
         # attributes
         if not in_attrs:
             attrs = get_attrs_from_html(browser) or get_attrs_from_elements(browser)
             if attrs is not None:
+                attrs["zpid"] = zpid
                 attrs["url"] = browser.current_url
                 update_attrs_file(out_path, attrs)
             else:
@@ -95,10 +97,12 @@ def scrape_urls(browser, urls_path, out_path, price_history_path, tax_history_pa
         if num_failures > configs.MAX_FAILURES or num_consecutive_failures > configs.MAX_CONSECUTIVE_FAILURES:
             break
 
-        sleep_time = configs.SLEEP_BETWEEN_SCRAPE()
-        print("\r{} / {} failures: {} consecutive failures: {} sleep: {}".format(
-            idx + 1, num_urls, num_failures, num_consecutive_failures, sleep_time).ljust(100), end="")
-        sleep(sleep_time)
+        sleep_time = int(configs.SLEEP_BETWEEN_SCRAPE())
+        for sleep_time_remaining in range(sleep_time, 0, -1):
+            print("\r{} / {} failures: {} consecutive failures: {} sleep: {:.0f}".format(
+                idx + 1, num_urls, num_failures, num_consecutive_failures, sleep_time_remaining)
+                .ljust(100), end="")
+            sleep(1)
     return True
 
 if __name__ == "__main__":
@@ -115,10 +119,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
     browser.close()
-
-from time import sleep
-for i in ["a", "aaaa", "b", "bbbb"]:
-    print("\r{}".format(i), end="")
-    sleep(1)
-
-"1".ljust(50)

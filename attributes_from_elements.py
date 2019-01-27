@@ -39,7 +39,6 @@ ATTRIBUTES = {
         SearchVal("//*[@id='region-zipcode']"),
         SearchVal("//*[@class='zsg-h2']", process=lambda s: regex_group_or_default(r"[^ ]+$", s))
     ]),
-    "zpid": SearchVal(r"(?<=zpid=)[\d]+", SearchValBy.REGEX),
     "address": SearchVal("//*[contains(@class, 'addr')]"),
     "description": SearchVal("//*[@id='home-description-container']", process=clean_text),
     "beds": SearchValOr(searchVals=[beds_class, beds_regex]),

@@ -27,7 +27,6 @@ def get_attrs_from_html(browser):
         "rent_zestimate": prop.get("rentZestimate"),
         "address": prop.get("streetAddress"),
         "zipcode": prop.get("zipcode"),
-        "zpid": prop.get("zpid"),
         "home_type": prop.get("homeType"),
         "latitude": prop.get("latitude"),
         "longitude": prop.get("longitude"),
