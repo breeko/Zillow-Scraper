@@ -20,16 +20,14 @@ logging.basicConfig(filename='scrape.log',level=logging.INFO)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("urls", help="file containing zillow sites to scrape")
-parser.add_argument("-o", "--out", default='data/out.csv',
+parser.add_argument("-o", "--out", default='data/db/out.csv',
                      help="destination of home attributes output file")
-parser.add_argument("-p", "--prices", default='data/prices.csv',
+parser.add_argument("-p", "--prices", default='data/db/prices.csv',
                      help="destination of price history output file")
-parser.add_argument("-t", "--taxes", default='data/taxes.csv',
+parser.add_argument("-t", "--taxes", default='data/db/taxes.csv',
                      help="destination of tax history output file")
 parser.add_argument("-l", "--headless", dest='headless', action='store_true',
                      help="boolen to indicate whether to run as headless")
-
-parser.set_defaults(rentals=False)
 
 args = parser.parse_args()
 
