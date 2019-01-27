@@ -10,6 +10,7 @@ import utils.csv_utils; reload(utils.csv_utils)
 from utils.csv_utils import update_attrs_file, update_price_file, update_tax_file, get_csv_col, delete_dups
 import utils; reload(utils)
 from utils.utils import get_zpid_from_zillow_url
+from selenium.common.exceptions import TimeoutException
 
 import configs
 
@@ -55,8 +56,13 @@ def scrape_urls(browser, urls_path, out_path, price_history_path, tax_history_pa
         if in_attrs:
             # NOTE: ignore if review in attributes although may be missing price and tax history
             continue
-
-        browser.get(url)
+        
+        try:
+            browser.get(url)
+        except TimeoutException:
+            logging.INFO("TIMEOUT {}".format(url))
+            sleep(configs.SLEEP_AFTER_TIMEOUT)
+            continue
 
         attrs = price_history = tax_history = None
         

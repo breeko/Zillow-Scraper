@@ -9,5 +9,8 @@ MAX_FAILURES = 100
 # seconds to sleep after scrape failure
 SLEEP_AFTER_FAILURE = lambda: 60 * 60
 
-# second to sleep after scrape success
-SLEEP_BETWEEN_SCRAPE = lambda: min(3600, np.random.pareto(0.5) + 2)
+# seconds to sleep after scrape success
+SLEEP_BETWEEN_SCRAPE = lambda: min(3600, np.random.pareto(1) + 2)
+
+# seconds to sleep after timeout
+SLEEP_AFTER_TIMEOUT = 20
