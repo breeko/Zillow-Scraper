@@ -1,6 +1,6 @@
 import re
-
 import datetime as dt
+from time import sleep
 
 TIME_FORMAT = "%Y-%m-%d-%H:%M:%S"
 
@@ -78,3 +78,8 @@ def get_from_dict(d, keys):
             break
         out = out.get(key)
     return out
+
+def sleep_verbose(message, sleep_time):
+    for sleep_time_remaining in range(sleep_time, 0, -1):
+            print("\r{} sleep: {:.0f}".format(message, sleep_time_remaining).ljust(100), end="")
+            sleep(1)
