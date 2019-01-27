@@ -7,10 +7,10 @@ from attributes_from_elements import get_attrs_from_elements
 from attributes_from_html import get_attrs_from_html
 import history; reload(history)
 from history import get_price_history, get_tax_history
-import csv_utils; reload(csv_utils)
-from csv_utils import update_attrs_file, update_price_file, update_tax_file, get_csv_col, delete_dups
+import utils.csv_utils; reload(csv_utils)
+from utls.csv_utils import update_attrs_file, update_price_file, update_tax_file, get_csv_col, delete_dups
 import utils; reload(utils)
-from utils import get_zpid_from_zillow_url
+from utils.utils import get_zpid_from_zillow_url
 
 import argparse
 
