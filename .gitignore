@@ -16,3 +16,6 @@ data/urls/
 # misc
 .vscode/
 .DS_Store
+
+# credentials for zillow
+credentials.py

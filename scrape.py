@@ -1,18 +1,22 @@
 from imp import reload
 
-import numpy as np
-from browser import setup_browser
+from utils.browser import setup_browser
 from time import sleep
 from attributes_from_elements import get_attrs_from_elements
 from attributes_from_html import get_attrs_from_html
-import history; reload(history)
-from history import get_price_history, get_tax_history
-import utils.csv_utils; reload(csv_utils)
-from utls.csv_utils import update_attrs_file, update_price_file, update_tax_file, get_csv_col, delete_dups
+import get_history; reload(get_history)
+from get_history import get_price_history, get_tax_history
+import utils.csv_utils; reload(utils.csv_utils)
+from utils.csv_utils import update_attrs_file, update_price_file, update_tax_file, get_csv_col, delete_dups
 import utils; reload(utils)
 from utils.utils import get_zpid_from_zillow_url
 
+import configs
+
 import argparse
+import logging
+
+logging.basicConfig(filename='scrape.log',level=logging.INFO)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("urls", help="file containing zillow sites to scrape")
@@ -29,17 +33,21 @@ parser.set_defaults(rentals=False)
 
 args = parser.parse_args()
 
-with open("sales.txt", "r") as f:
-    urls = f.readlines()
-
 def scrape_urls(browser, urls_path, out_path, price_history_path, tax_history_path):
+    with open(urls_path, "r") as f:
+        urls = f.readlines()
+
     attrs_reviewed = get_csv_col(out_path, "zpid")
     price_reviewed = get_csv_col(price_history_path, "zpid")
     tax_reviewed = get_csv_col(tax_history_path, "zpid")
     
+    num_failures = 0
+    num_consecutive_failures = 0
+
     num_urls = len(urls)
     for idx, url in enumerate(urls):
-        print("\r{} / {}".format(idx + 1, num_urls), end="")
+        print("\r{} / {} failures: {} consecutive failures: {}".format(
+            idx + 1, num_urls, num_failures, num_consecutive_failures).ljust(100), end="")
         zpid = get_zpid_from_zillow_url(url)
 
         in_attrs = zpid in attrs_reviewed
@@ -51,23 +59,45 @@ def scrape_urls(browser, urls_path, out_path, price_history_path, tax_history_pa
 
         browser.get(url)
 
+        attrs = price_history = tax_hostory = None
+        
         # attributes
         if not in_attrs:
             attrs = get_attrs_from_html(browser) or get_attrs_from_elements(browser)
-            update_attrs_file(out_path, attrs)
+            if attrs is not None:
+                attrs["url"] = browser.current_url
+                update_attrs_file(out_path, attrs)
+            else:
+                logging.error("ATTRIBUTES {}".format(url))
 
         # price history
         if not in_price:
             price_history = get_price_history(browser)
-            update_price_file(price_history_path, price_history)
+            if price_history:
+                update_price_file(price_history_path, price_history)
+            else:
+                logging.error("PRICE_HISTORY {}".format(url))
 
         # tax history
         if not in_tax:
             tax_history = get_tax_history(browser)
-            update_tax_file(tax_history_path, tax_history)
+            if tax_history:
+                update_tax_file(tax_history_path, tax_history)
+            else:
+                logging.error("TAX_HISTORY {}".format(url))
         
-        sleep_time = min(3600, np.random.pareto(0.5) + 2)
-        print("\r{} / {} sleeping: {:.2f}".format(idx + 1, num_urls, sleep_time), end="")
+        if not attrs and not price_history and not tax_history:
+            num_failures += 1
+            num_consecutive_failures += 1
+        else:
+            num_consecutive_failures = 0
+        
+        if num_failures > configs.MAX_FAILURES or num_consecutive_failures > configs.MAX_CONSECUTIVE_FAILURES:
+            break
+
+        sleep_time = configs.SLEEP_BETWEEN_SCRAPE()
+        print("\r{} / {} failures: {} consecutive failures: {} sleep: {}".format(
+            idx + 1, num_urls, num_failures, num_consecutive_failures, sleep_time).ljust(100), end="")
         sleep(sleep_time)
     return True
 
@@ -85,3 +115,10 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
     browser.close()
+
+from time import sleep
+for i in ["a", "aaaa", "b", "bbbb"]:
+    print("\r{}".format(i), end="")
+    sleep(1)
+
+"1".ljust(50)

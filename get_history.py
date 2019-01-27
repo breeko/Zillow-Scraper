@@ -1,4 +1,4 @@
-from utils import table_to_dict, regex_group_or_default, get_zpid_from_zillow_url
+from utils.utils import table_to_dict, regex_group_or_default, get_zpid_from_zillow_url
 import selenium.webdriver.support.ui as ui
 
 # This file has the functions related to getting price and tax history

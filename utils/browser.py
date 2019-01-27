@@ -2,7 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
 from time import sleep
-import config
+import credentials
 
 def setup_browser(sign_in=False,headless=False):
     firefox_profile = webdriver.FirefoxProfile()
@@ -25,9 +25,9 @@ def setup_browser(sign_in=False,headless=False):
             login_by_email_buttons[0].click()
             
         browser.find_element_by_id("reg-login-email").clear()
-        browser.find_element_by_id("reg-login-email").send_keys("{}{}".format(config.email, webdriver.common.keys.Keys.TAB))
+        browser.find_element_by_id("reg-login-email").send_keys("{}{}".format(credentials.email, webdriver.common.keys.Keys.TAB))
         browser.find_element_by_id("inputs-password").clear()
-        browser.find_element_by_id("inputs-password").send_keys(config.password, webdriver.common.keys.Keys.RETURN)
+        browser.find_element_by_id("inputs-password").send_keys(credentials.password, webdriver.common.keys.Keys.RETURN)
         sleep(5)
     
     return browser

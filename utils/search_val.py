@@ -1,6 +1,6 @@
 from selenium.webdriver.common.by import By
 import re
-from utils import regex_group_or_default
+from utils.utils import regex_group_or_default
 
 class SearchValBy(By):
     REGEX = "regex"

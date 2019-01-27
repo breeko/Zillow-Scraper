@@ -1,7 +1,8 @@
 from imp import reload
-import search_val; reload(search_val)
+import utils.search_val; reload(utils.search_val)
 from utils.search_val import SearchVal, SearchValOr, SearchValBy, regex_group_or_default 
 from utils.utils import keep_digits, clean_dict, clean_text, match_after, add_time
+from utils.browser import setup_browser
 
 # alternative to parsing SEO information from html
 # this searches props from the rendered site
@@ -39,7 +40,6 @@ ATTRIBUTES = {
         SearchVal("//*[@class='zsg-h2']", process=lambda s: regex_group_or_default(r"[^ ]+$", s))
     ]),
     "zpid": SearchVal(r"(?<=zpid=)[\d]+", SearchValBy.REGEX),
-    "url:": browser.current_url,
     "address": SearchVal("//*[contains(@class, 'addr')]"),
     "description": SearchVal("//*[@id='home-description-container']", process=clean_text),
     "beds": SearchValOr(searchVals=[beds_class, beds_regex]),
