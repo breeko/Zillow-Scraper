@@ -42,9 +42,15 @@ def scrape_urls(browser, urls_path, out_path, price_history_path, tax_history_pa
     
     num_failures = 0
     num_consecutive_failures = 0
+    num_timeouts = 0
 
     num_urls = len(urls)
     for idx, url in enumerate(urls):
+        if num_failures > configs.MAX_FAILURES or
+            num_consecutive_failures > configs.MAX_CONSECUTIVE_FAILURES or 
+            num_timeouts > configs.MAX_TIMEOUTS:
+            break
+
         print("\r{} / {} failures: {} consecutive failures: {}".format(
             idx + 1, num_urls, num_failures, num_consecutive_failures).ljust(100), end="")
         zpid = get_zpid_from_zillow_url(url)
@@ -61,7 +67,8 @@ def scrape_urls(browser, urls_path, out_path, price_history_path, tax_history_pa
             browser.get(url)
         except TimeoutException:
             logging.INFO("TIMEOUT {}".format(url))
-            sleep(configs.SLEEP_AFTER_TIMEOUT)
+            num_timeouts += 1
+            sleep(configs.SLEEP_AFTER_TIMEOUT())
             continue
 
         attrs = price_history = tax_history = None
@@ -98,15 +105,14 @@ def scrape_urls(browser, urls_path, out_path, price_history_path, tax_history_pa
         else:
             num_consecutive_failures = 0
         
-        if num_failures > configs.MAX_FAILURES or num_consecutive_failures > configs.MAX_CONSECUTIVE_FAILURES:
-            break
-
         sleep_time = int(configs.SLEEP_BETWEEN_SCRAPE())
+
         for sleep_time_remaining in range(sleep_time, 0, -1):
             print("\r{} / {} failures: {} consecutive failures: {} sleep: {:.0f}".format(
                 idx + 1, num_urls, num_failures, num_consecutive_failures, sleep_time_remaining)
                 .ljust(100), end="")
             sleep(1)
+    
     return True
 
 if __name__ == "__main__":
