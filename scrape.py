@@ -65,7 +65,7 @@ def scrape_urls(browser, urls_path, out_path, price_history_path, tax_history_pa
         try:
             browser.get(url)
         except TimeoutException:
-            logging.INFO("TIMEOUT {}".format(url))
+            logging.info("TIMEOUT {}".format(url))
             num_timeouts += 1
             sleep_time = configs.SLEEP_AFTER_TIMEOUT()
             sleep_verbose("Timeout.", sleep_time)
@@ -115,13 +115,13 @@ if __name__ == "__main__":
     print("Setting up browser")
     browser = setup_browser(sign_in=False, headless=args.headless)
     print("Scraping {}".format(args.urls))
-    try:
-        scrape_urls(
-            browser=browser,
-            urls_path=args.urls,
-            out_path=args.out,
-            tax_history_path=args.taxes,
-            price_history_path=args.prices)
-    except Exception as e:
-        print(e)
+    #try:
+    scrape_urls(
+        browser=browser,
+        urls_path=args.urls,
+        out_path=args.out,
+        tax_history_path=args.taxes,
+        price_history_path=args.prices)
+    #except Exception as e:
+    #    print(e)
     browser.close()

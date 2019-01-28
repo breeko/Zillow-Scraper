@@ -14,6 +14,7 @@ def setup_browser(sign_in=False,headless=False):
         options.add_argument('--headless')
 
     browser = webdriver.Firefox(firefox_profile=firefox_profile, options=options)
+    browser.set_page_load_timeout(10)
 
     if sign_in:
         login_url = "http://www.zillow.com/user/acct/login"
