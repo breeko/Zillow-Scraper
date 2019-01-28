@@ -13,7 +13,7 @@ MAX_FAILURES = 100
 MAX_TIMEOUTS = 25
 
 # maximum number of captchas in a scraping session
-MAX_TIMEOUTS = 10
+MAX_CAPTCHA = 10
 
 # seconds to sleep after scrape failure
 SLEEP_AFTER_FAILURE = lambda: 60 * 60
