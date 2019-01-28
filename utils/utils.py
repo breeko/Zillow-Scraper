@@ -79,7 +79,12 @@ def get_from_dict(d, keys):
         out = out.get(key)
     return out
 
-def sleep_verbose(message, sleep_time):
-    for sleep_time_remaining in range(sleep_time, 0, -1):
-            print("\r{} sleep: {:.0f}".format(message, sleep_time_remaining).ljust(40), end="")
-            sleep(1)
+def sleep_verbose(message, sleep_time, ljust=85):
+    sleep_remaining = sleep_time
+    while True:
+        print("\r{} sleep: {:0.0f}".format(message, sleep_remaining).ljust(ljust), end="")
+        if sleep_remaining <= 0:
+            break
+        sleep_amount = min(1, sleep_time)
+        sleep_remaining -= sleep_amount
+        sleep(sleep_amount)

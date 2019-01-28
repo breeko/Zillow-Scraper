@@ -11,14 +11,15 @@ def setup_browser(sign_in=False, headless=False):
     firefox_profile = webdriver.FirefoxProfile()
     firefox_profile.set_preference('permissions.default.image', 2)
     firefox_profile.set_preference('dom.ipc.plugins.enabled.libflashplayer.so', 'false')
-    firefox_profile.set_preference("general.useragent.override", useragent.random)
+    # NOTE: Zillow someone more likely to captcha if random user agent used
+    # firefox_profile.set_preference("general.useragent.override", useragent.random)
 
     options = Options()
     if headless:
         options.add_argument('--headless')
 
     browser = webdriver.Firefox(firefox_profile=firefox_profile, options=options)
-    browser.set_page_load_timeout(20)
+    browser.set_page_load_timeout(15)
 
     if sign_in:
         login_url = "http://www.zillow.com/user/acct/login"

@@ -55,9 +55,9 @@ def scrape_urls(urls_path, out_path, price_history_path, tax_history_path, headl
                 num_timeouts > configs.MAX_TIMEOUTS or \
                 num_captcha > configs.MAX_CAPTCHA:
                 break
-
-            print("\r{} / {} failures: {} consecutive failures: {} timeouts: {}".format(
-                idx + 1, num_urls, num_failures, num_consecutive_failures, num_timeouts).ljust(100), end="")
+            
+            sleep_verbose("{} / {} failures: {} consecutive failures: {} timeouts: {} captchas: {}".format(
+                idx + 1, num_urls, num_failures, num_consecutive_failures, num_timeouts, num_captcha), 0)
             zpid = get_zpid_from_zillow_url(url)
 
             in_attrs = zpid in attrs_reviewed
@@ -76,8 +76,6 @@ def scrape_urls(urls_path, out_path, price_history_path, tax_history_path, headl
                 num_captcha += 1
                 browser.close()
                 browser = setup_browser(sign_in=False, headless=headless)
-
-
 
             try:
                 browser.get(url)
@@ -125,8 +123,8 @@ def scrape_urls(urls_path, out_path, price_history_path, tax_history_path, headl
                 num_consecutive_failures = 0
             
             sleep_time = int(configs.SLEEP_BETWEEN_SCRAPE())
-            sleep_verbose("{} / {} failures: {} consecutive failures: {} timeouts: {}".format(
-                idx + 1, num_urls, num_failures, num_consecutive_failures, num_timeouts), sleep_time)
+            sleep_verbose("{} / {} failures: {} consecutive failures: {} timeouts: {} captchas: {}".format(
+                idx + 1, num_urls, num_failures, num_consecutive_failures, num_timeouts, num_captcha), sleep_time)
     except KeyboardInterrupt:
         browser.close()
 
