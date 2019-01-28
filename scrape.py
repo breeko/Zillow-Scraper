@@ -42,6 +42,7 @@ def scrape_urls(urls_path, out_path, price_history_path, tax_history_path, headl
     num_failures = 0
     num_consecutive_failures = 0
     num_timeouts = 0
+    num_captcha = 0
 
     browser = setup_browser(sign_in=False, headless=headless)
 
@@ -51,7 +52,8 @@ def scrape_urls(urls_path, out_path, price_history_path, tax_history_path, headl
 
             if num_failures > configs.MAX_FAILURES or \
                 num_consecutive_failures > configs.MAX_CONSECUTIVE_FAILURES or \
-                num_timeouts > configs.MAX_TIMEOUTS:
+                num_timeouts > configs.MAX_TIMEOUTS or \
+                num_captcha > confgs.MAX_CAPTCHA:
                 break
 
             print("\r{} / {} failures: {} consecutive failures: {} timeouts: {}".format(
@@ -66,10 +68,17 @@ def scrape_urls(urls_path, out_path, price_history_path, tax_history_path, headl
                 # NOTE: ignore if review in attributes although may be missing price and tax history
                 continue
             
-            if (idx + 1) % configs.RESET_BROWSER == 0 or "captcha" in browser.current_url:
+            if (idx + 1) % configs.RESET_BROWSER == 0:
                 browser.close()
                 browser = setup_browser(sign_in=False, headless=headless)
             
+            if "captcha" in browser.current_url.lower():
+                num_captcha += 1
+                browser.close()
+                browser = setup_browser(sign_in=False, headless=headless)
+
+
+
             try:
                 browser.get(url)
             except TimeoutException:
