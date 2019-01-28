@@ -53,7 +53,7 @@ def scrape_urls(urls_path, out_path, price_history_path, tax_history_path, headl
             if num_failures > configs.MAX_FAILURES or \
                 num_consecutive_failures > configs.MAX_CONSECUTIVE_FAILURES or \
                 num_timeouts > configs.MAX_TIMEOUTS or \
-                num_captcha > confgs.MAX_CAPTCHA:
+                num_captcha > configs.MAX_CAPTCHA:
                 break
 
             print("\r{} / {} failures: {} consecutive failures: {} timeouts: {}".format(
