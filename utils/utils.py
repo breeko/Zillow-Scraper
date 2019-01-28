@@ -6,7 +6,7 @@ TIME_FORMAT = "%Y-%m-%d-%H:%M:%S"
 
 def add_time(d, key="added"):
     with_time = {**d}
-    with_time[key] = dt.datetime.now().strftime(TIME_FORMAT)
+    with_time[key] = dt.datetime.utcnow().strftime(TIME_FORMAT)
     return with_time
 
 def clean_dict(d):
