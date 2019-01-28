@@ -31,7 +31,7 @@ parser.add_argument("-l", "--headless", dest='headless', action='store_true',
 
 args = parser.parse_args()
 
-def scrape_urls(browser, urls_path, out_path, price_history_path, tax_history_path):
+def scrape_urls(urls_path, out_path, price_history_path, tax_history_path, headless):
     with open(urls_path, "r") as f:
         urls = f.readlines()
 
@@ -43,85 +43,92 @@ def scrape_urls(browser, urls_path, out_path, price_history_path, tax_history_pa
     num_consecutive_failures = 0
     num_timeouts = 0
 
+    browser = setup_browser(sign_in=False, headless=headless)
+
     num_urls = len(urls)
-    for idx, url in enumerate(urls):
-        if num_failures > configs.MAX_FAILURES or \
-            num_consecutive_failures > configs.MAX_CONSECUTIVE_FAILURES or \
-            num_timeouts > configs.MAX_TIMEOUTS:
-            break
+    try:
+        for idx, url in enumerate(urls):
 
-        print("\r{} / {} failures: {} consecutive failures: {} timeouts: {}".format(
-            idx + 1, num_urls, num_failures, num_consecutive_failures, num_timeouts).ljust(100), end="")
-        zpid = get_zpid_from_zillow_url(url)
+            if num_failures > configs.MAX_FAILURES or \
+                num_consecutive_failures > configs.MAX_CONSECUTIVE_FAILURES or \
+                num_timeouts > configs.MAX_TIMEOUTS:
+                break
 
-        in_attrs = zpid in attrs_reviewed
-        in_price = zpid in price_reviewed
-        in_tax = zpid in tax_reviewed
+            print("\r{} / {} failures: {} consecutive failures: {} timeouts: {}".format(
+                idx + 1, num_urls, num_failures, num_consecutive_failures, num_timeouts).ljust(100), end="")
+            zpid = get_zpid_from_zillow_url(url)
 
-        if in_attrs:
-            # NOTE: ignore if review in attributes although may be missing price and tax history
-            continue
-        
-        try:
-            browser.get(url)
-        except TimeoutException:
-            logging.info("TIMEOUT {}".format(url))
-            num_timeouts += 1
-            sleep_time = configs.SLEEP_AFTER_TIMEOUT()
-            sleep_verbose("Timeout.", sleep_time)
-            continue
+            in_attrs = zpid in attrs_reviewed
+            in_price = zpid in price_reviewed
+            in_tax = zpid in tax_reviewed
 
-        attrs = price_history = tax_history = None
-        
-        # attributes
-        if not in_attrs:
-            attrs = get_attrs_from_html(browser) or get_attrs_from_elements(browser)
-            if attrs is not None:
-                attrs["zpid"] = zpid
-                attrs["url"] = browser.current_url
-                update_attrs_file(out_path, attrs)
-            else:
-                logging.error("ATTRIBUTES {}".format(url))
-
-        # price history
-        if not in_price:
-            price_history = get_price_history(browser)
-            if price_history:
-                update_price_file(price_history_path, price_history)
-            else:
-                logging.error("PRICE_HISTORY {}".format(url))
-
-        # tax history
-        if not in_tax:
-            tax_history = get_tax_history(browser)
-            if tax_history:
-                update_tax_file(tax_history_path, tax_history)
-            else:
-                logging.error("TAX_HISTORY {}".format(url))
-        
-        if not attrs and not price_history and not tax_history:
-            num_failures += 1
-            num_consecutive_failures += 1
-        else:
-            num_consecutive_failures = 0
-        
-        sleep_time = int(configs.SLEEP_BETWEEN_SCRAPE())
-        sleep_verbose("{} / {} failures: {} consecutive failures: {} timeouts: {}".format(
-            idx + 1, num_urls, num_failures, num_consecutive_failures, num_timeouts), sleep_time)
+            if in_attrs:
+                # NOTE: ignore if review in attributes although may be missing price and tax history
+                continue
             
+            if (idx + 1) % configs.RESET_BROWSER == 0 or "captcha" in browser.current_url:
+                browser.close()
+                browser = setup_browser(sign_in=False, headless=headless)
+            
+            try:
+                browser.get(url)
+            except TimeoutException:
+                browser.close()
+                browser = setup_browser(sign_in=False, headless=headless)
+                logging.info("TIMEOUT {}".format(url))
+                num_timeouts += 1
+                sleep_time = configs.SLEEP_AFTER_TIMEOUT()
+                sleep_verbose("Timeout.", sleep_time)
+                continue
+
+            attrs = price_history = tax_history = None
+            
+            # attributes
+            if not in_attrs:
+                attrs = get_attrs_from_html(browser) or get_attrs_from_elements(browser)
+                if attrs is not None:
+                    attrs["zpid"] = zpid
+                    attrs["url"] = browser.current_url
+                    update_attrs_file(out_path, attrs)
+                else:
+                    logging.error("ATTRIBUTES {}".format(url))
+
+            # price history
+            if not in_price:
+                price_history = get_price_history(browser)
+                if price_history:
+                    update_price_file(price_history_path, price_history)
+                else:
+                    logging.error("PRICE_HISTORY {}".format(url))
+
+            # tax history
+            if not in_tax:
+                tax_history = get_tax_history(browser)
+                if tax_history:
+                    update_tax_file(tax_history_path, tax_history)
+                else:
+                    logging.error("TAX_HISTORY {}".format(url))
+            
+            if not attrs and not price_history and not tax_history:
+                num_failures += 1
+                num_consecutive_failures += 1
+            else:
+                num_consecutive_failures = 0
+            
+            sleep_time = int(configs.SLEEP_BETWEEN_SCRAPE())
+            sleep_verbose("{} / {} failures: {} consecutive failures: {} timeouts: {}".format(
+                idx + 1, num_urls, num_failures, num_consecutive_failures, num_timeouts), sleep_time)
+    except KeyboardInterrupt:
+        browser.close()
+
     return True
 
 if __name__ == "__main__":
-    print("Setting up browser")
-    browser = setup_browser(sign_in=False, headless=args.headless)
     print("Scraping {}".format(args.urls))
-    #try:
     scrape_urls(
-        browser=browser,
         urls_path=args.urls,
         out_path=args.out,
         tax_history_path=args.taxes,
-        price_history_path=args.prices)
-    #except Exception as e:
-    #    print(e)
-    browser.close()
+        price_history_path=args.prices,
+        headless=args.headless)
+    

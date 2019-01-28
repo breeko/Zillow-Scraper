@@ -1,3 +1,4 @@
 selenium
 numpy
 bs4
+fake_useragent

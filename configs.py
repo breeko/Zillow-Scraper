@@ -1,5 +1,8 @@
 import numpy as np
 
+# number of scrapes before browser is reset
+RESET_BROWSER = 10
+
 # maximum number of consecutive failures in a scraping session
 MAX_CONSECUTIVE_FAILURES = 3
 

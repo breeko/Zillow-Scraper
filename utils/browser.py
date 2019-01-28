@@ -1,20 +1,24 @@
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+from fake_useragent import UserAgent
 
 from time import sleep
 import credentials
 
-def setup_browser(sign_in=False,headless=False):
+def setup_browser(sign_in=False, headless=False):
+    useragent = UserAgent()
+
     firefox_profile = webdriver.FirefoxProfile()
     firefox_profile.set_preference('permissions.default.image', 2)
     firefox_profile.set_preference('dom.ipc.plugins.enabled.libflashplayer.so', 'false')
+    firefox_profile.set_preference("general.useragent.override", useragent.random)
 
     options = Options()
     if headless:
         options.add_argument('--headless')
 
     browser = webdriver.Firefox(firefox_profile=firefox_profile, options=options)
-    browser.set_page_load_timeout(10)
+    browser.set_page_load_timeout(20)
 
     if sign_in:
         login_url = "http://www.zillow.com/user/acct/login"
